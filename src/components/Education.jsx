@@ -1,42 +1,72 @@
-import React, { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { fadeInUp, staggerContainer } from '../utils/animations';
-import { GraduationCap, Award } from 'lucide-react';
+import { useEffect, useRef } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+gsap.registerPlugin(ScrollTrigger)
+
+const education = [
+  { institution: 'Bennett University', period: '2026 - Present', degree: 'B.Tech in Computer Science', details: '' },
+  { institution: "St. Columba's School, New Delhi", period: 'May 2012 - Jun 2025', degree: '', details: 'Student Council · Debating Society · Vector Society · Head, Reboot Society · Head, Decipher Club · Football · Lawn Tennis' },
+]
+
 export default function Education() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const sectionRef = useRef(null)
+  const labelRef = useRef(null)
+  const titleRef = useRef(null)
+  const cardsRef = useRef([])
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.set([labelRef.current, titleRef.current], { y: 30, opacity: 0 })
+      gsap.to([labelRef.current, titleRef.current], {
+        y: 0, opacity: 1, duration: 1.1, stagger: 0.1, ease: 'power3.out',
+        scrollTrigger: { trigger: sectionRef.current, start: 'top 85%', once: true },
+      })
+
+      cardsRef.current.forEach((card, i) => {
+        if (!card) return
+        gsap.set(card, { y: 50, opacity: 0 })
+        gsap.to(card, {
+          y: 0, opacity: 1, duration: 1.3, delay: i * 0.1, ease: 'power3.out',
+          scrollTrigger: { trigger: card, start: 'top 92%', once: true },
+        })
+      })
+    }, sectionRef)
+    return () => ctx.revert()
+  }, [])
+
   return (
-    <section id="education" className="py-24 px-4">
-      <div className="max-w-4xl mx-auto">
-        <motion.div initial="hidden" animate={isInView ? "visible" : "hidden"} variants={staggerContainer} ref={ref}>
-          <motion.h2 variants={fadeInUp} className="font-display text-4xl md:text-5xl font-bold mb-12 text-center">Education & <span className="text-primary">Leadership</span></motion.h2>
-          <div className="space-y-6">
-            <motion.div variants={fadeInUp} className="glass rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 items-start">
-              <div className="p-3 rounded-full bg-primary/10 text-primary"><GraduationCap size={24} /></div>
-              <div className="flex-1">
-                <h3 className="font-display text-2xl font-bold text-white">Bennett University</h3>
-                <p className="text-primary font-medium">B.Tech in Computer Science</p>
-                <p className="text-slate-400 text-sm mt-1">2026 - Present</p>
+    <section id="education" ref={sectionRef} className="relative py-48 px-6">
+      <div className="max-w-3xl mx-auto">
+        <div ref={labelRef} className="mono-label mb-6">
+          <span className="text-term">04</span> <span className="text-neutral-700">/</span> education
+        </div>
+        <h2 ref={titleRef} className="section-title mb-20">
+          Education & Leadership<span className="text-neutral-600">.</span>
+        </h2>
+
+        <div className="space-y-16">
+          {education.map((edu, index) => (
+            <div key={index} ref={(el) => (cardsRef.current[index] = el)} className="glass-card p-10 md:p-14">
+              <div className="flex flex-col gap-4 mb-6">
+                <span className="font-mono text-[11px] tracking-[0.2em] text-neutral-600 uppercase">
+                  {edu.period}
+                </span>
+                <h3 className="text-2xl md:text-3xl font-semibold text-neutral-100 tracking-tight">
+                  {edu.institution}
+                </h3>
               </div>
-            </motion.div>
-            <motion.div variants={fadeInUp} className="glass rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 items-start">
-              <div className="p-3 rounded-full bg-accent/10 text-accent"><Award size={24} /></div>
-              <div className="flex-1">
-                <h3 className="font-display text-2xl font-bold text-white">St. Columba's School, New Delhi</h3>
-                <p className="text-slate-400 text-sm mt-1 mb-4">May 2012 - Jun 2025</p>
-                <div className="mt-4">
-                  <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Activities & Societies</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {['Student Council', 'Debating Society', 'Vector Society', 'Head - Reboot Society', 'Head - Decipher Club', 'Football', 'Lawn Tennis'].map((activity) => (
-                      <span key={activity} className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-slate-300 hover:bg-white/10 transition-colors">{activity}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
+              {edu.degree && (
+                <p className="text-neutral-300 mb-4 text-lg font-light">{edu.degree}</p>
+              )}
+              {edu.details && (
+                <p className="font-mono text-xs tracking-wide text-neutral-500 leading-[2]">
+                  {edu.details}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
-  );
+  )
 }
