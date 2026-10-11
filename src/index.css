@@ -13,25 +13,19 @@
       linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
     background-size: 64px 64px;
     background-position: center top;
-    transition: background-color 800ms ease, color 800ms ease;
   }
   h1, h2, h3, h4, h5, h6 { @apply font-display tracking-tight; }
   ::selection { @apply bg-neutral-100 text-ink-950; }
-
   section[id] { scroll-margin-top: 96px; }
 }
 
 @layer components {
-  .glass {
-    @apply bg-white/[0.02] backdrop-blur-md border border-white/[0.06];
-  }
+  .glass { @apply bg-white/[0.02] backdrop-blur-md border border-white/[0.06]; }
   .glass-card {
     @apply glass rounded-2xl transition-all duration-700 ease-out
            hover:bg-white/[0.035] hover:border-white/[0.14];
   }
-  .mono-label {
-    @apply font-mono text-[11px] tracking-[0.2em] uppercase text-neutral-500;
-  }
+  .mono-label { @apply font-mono text-[11px] tracking-[0.2em] uppercase text-neutral-500; }
   .btn-primary {
     @apply inline-flex items-center gap-2 px-7 py-3 rounded-full font-medium text-ink-950 bg-neutral-100
            hover:bg-white transition-colors duration-500;
@@ -40,21 +34,11 @@
     @apply inline-flex items-center gap-2 px-7 py-3 rounded-full font-medium text-neutral-300 border border-white/10
            hover:border-white/30 hover:text-white transition-colors duration-500;
   }
-  .section-title {
-    @apply text-4xl md:text-5xl font-semibold tracking-tight text-neutral-100;
-  }
-
-  .nav-link {
-    @apply relative font-mono text-xs text-neutral-500 hover:text-neutral-100 transition-colors duration-500;
-  }
+  .section-title { @apply text-4xl md:text-5xl font-semibold tracking-tight text-neutral-100; }
+  .nav-link { @apply relative font-mono text-xs text-neutral-500 hover:text-neutral-100 transition-colors duration-500; }
   .nav-link::after {
-    content: '';
-    position: absolute;
-    left: 0; right: 0; bottom: -4px;
-    height: 1px;
-    background: currentColor;
-    transform: scaleX(0);
-    transform-origin: left;
+    content: ''; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px;
+    background: currentColor; transform: scaleX(0); transform-origin: left;
     transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
   }
   .nav-link:hover::after { transform: scaleX(1); }
@@ -69,7 +53,7 @@
     rgba(255,255,255,0.010) 3px, rgba(255,255,255,0.010) 4px
   );
   mix-blend-mode: overlay;
-  transition: background 800ms ease;
+  transition: opacity 800ms ease;
 }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -82,30 +66,60 @@ html.lenis { height: auto; }
 .lenis.lenis-stopped { overflow: hidden; }
 
 /* ============================================================
-   KITTY MODE 🐱 — triggered by typing "kitty" anywhere
+   THEME SWITCH GLIDE — gates transitions during the flip
+   ============================================================ */
+body.theme-switching,
+body.theme-switching *,
+body.theme-switching *::before,
+body.theme-switching *::after {
+  transition:
+    background-color 800ms ease,
+    color 800ms ease,
+    border-color 800ms ease,
+    box-shadow 800ms ease,
+    fill 800ms ease,
+    stroke 800ms ease !important;
+}
+
+/* ============================================================
+   KITTY MODE 🐱
    ============================================================ */
 
 body.kitty-mode {
-  background-color: #fff5f8;
-  background-image:
-    linear-gradient(rgba(255,105,180,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,105,180,0.06) 1px, transparent 1px);
+  background-color: #fff8fb;
+  background-image: radial-gradient(circle, rgba(255, 105, 180, 0.10) 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
   color: #4a2c3a;
 }
 
 body.kitty-mode ::selection { background-color: #ff4d8d; color: #ffffff; }
 
-/* Glass surfaces */
+/* Polka dot overlay replaces scanlines */
+body.kitty-mode .scanlines::before {
+  background: radial-gradient(circle, rgba(255, 105, 180, 0.06) 1px, transparent 1px);
+  background-size: 10px 10px;
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}
+
+/* Glass surfaces get rounder, softer, prettier */
 body.kitty-mode .glass,
 body.kitty-mode .glass-card {
-  background-color: rgba(255, 255, 255, 0.7);
-  border-color: rgba(255, 105, 180, 0.22);
-  box-shadow: 0 8px 32px -12px rgba(255, 105, 180, 0.15);
+  background-color: rgba(255, 255, 255, 0.78);
+  border-color: rgba(255, 105, 180, 0.28);
+  border-width: 1.5px;
+  border-radius: 28px;
+  box-shadow:
+    0 12px 32px -14px rgba(255, 105, 180, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 body.kitty-mode .glass-card:hover {
-  background-color: rgba(255, 255, 255, 0.92);
-  border-color: rgba(255, 105, 180, 0.5);
-  box-shadow: 0 12px 40px -12px rgba(255, 105, 180, 0.28);
+  background-color: rgba(255, 255, 255, 0.95);
+  border-color: rgba(255, 105, 180, 0.6);
+  box-shadow:
+    0 20px 48px -16px rgba(255, 105, 180, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
 }
 
 /* Text ramp: white → dark plum, grays → rose */
@@ -118,69 +132,176 @@ body.kitty-mode .text-neutral-600 { color: #c998ab; }
 body.kitty-mode .text-neutral-700 { color: #e6b8ca; }
 body.kitty-mode .text-ink-950   { color: #3d1f2f; }
 
-/* Accent: green → hot pink */
+/* Accent swap */
 body.kitty-mode .text-term { color: #ff4d8d; }
 body.kitty-mode .bg-term   { background-color: #ff4d8d; }
 
 /* Solid backgrounds */
 body.kitty-mode .bg-white       { background-color: #ff4d8d; }
 body.kitty-mode .bg-neutral-100 { background-color: #ff4d8d; }
-body.kitty-mode .bg-ink-950     { background-color: #fff5f8; }
-body.kitty-mode .bg-ink-900     { background-color: #ffebf2; }
-body.kitty-mode .bg-ink-800     { background-color: #ffe0ec; }
-body.kitty-mode .bg-ink-700     { background-color: #ffd6e5; }
+body.kitty-mode .bg-ink-950     { background-color: #fff8fb; }
+body.kitty-mode .bg-ink-900     { background-color: #ffeef5; }
+body.kitty-mode .bg-ink-800     { background-color: #ffe4ef; }
+body.kitty-mode .bg-ink-700     { background-color: #ffd9e8; }
 
-/* Neutral marker dots → pink ramp */
+/* Neutral markers → pink ramp */
 body.kitty-mode .bg-neutral-500 { background-color: #ff8ab3; }
 body.kitty-mode .bg-neutral-600 { background-color: #ffa6c4; }
 body.kitty-mode .bg-neutral-700 { background-color: #ffc2d6; }
 
-/* Borders and translucent backgrounds (slash notation) */
-body.kitty-mode [class*="border-white/"] {
-  border-color: rgba(255, 105, 180, 0.25);
-}
-body.kitty-mode [class*="bg-white/"] {
-  background-color: rgba(255, 182, 210, 0.18);
-}
+/* Translucent overrides */
+body.kitty-mode [class*="border-white/"] { border-color: rgba(255, 105, 180, 0.32); }
+body.kitty-mode [class*="bg-white/"]     { background-color: rgba(255, 182, 210, 0.22); }
 
 /* Buttons */
 body.kitty-mode .btn-primary {
   background-color: #ff4d8d;
   color: #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px -8px rgba(255, 77, 141, 0.6);
 }
 body.kitty-mode .btn-primary:hover {
   background-color: #ff6fa3;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px -8px rgba(255, 77, 141, 0.7);
 }
 body.kitty-mode .btn-secondary {
-  border-color: rgba(255, 105, 180, 0.45);
+  border-color: rgba(255, 105, 180, 0.5);
   color: #5a3547;
+  background-color: rgba(255, 255, 255, 0.5);
 }
 body.kitty-mode .btn-secondary:hover {
   border-color: #ff4d8d;
   color: #ff4d8d;
-}
-
-/* Scanlines tinted pink */
-body.kitty-mode .scanlines::before {
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0px, transparent 3px,
-    rgba(255, 105, 180, 0.028) 3px, rgba(255, 105, 180, 0.028) 4px
-  );
+  background-color: #ffffff;
 }
 
 /* Scrollbar */
-body.kitty-mode::-webkit-scrollbar-track { background: #fff5f8; }
+body.kitty-mode::-webkit-scrollbar-track { background: #fff8fb; }
 body.kitty-mode::-webkit-scrollbar-thumb { background: #ffb8d0; }
 body.kitty-mode::-webkit-scrollbar-thumb:hover { background: #ff92b6; }
 
-/* Ambience blobs behind everything */
+/* Ambience blobs */
 body.kitty-mode .fixed.inset-0.pointer-events-none.-z-10 > div {
-  background-color: rgba(255, 105, 180, 0.08) !important;
+  background-color: rgba(255, 105, 180, 0.10) !important;
 }
 
-/* Navbar glass when scrolled */
+/* Navbar when scrolled */
 body.kitty-mode nav.glass {
-  background-color: rgba(255, 245, 248, 0.75);
-  border-bottom-color: rgba(255, 105, 180, 0.15);
+  background-color: rgba(255, 248, 251, 0.82);
+  border-bottom-color: rgba(255, 105, 180, 0.18);
+}
+
+/* Bigger radius across cards/markers */
+body.kitty-mode [class*="rounded-2xl"] { border-radius: 28px; }
+body.kitty-mode [class*="rounded-xl"]  { border-radius: 22px; }
+
+/* ============================================================
+   SPARKLE BURST animations
+   ============================================================ */
+.sparkle-burst-particle {
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  margin-left: calc(var(--size) / -2);
+  margin-top: calc(var(--size) / -2);
+  opacity: 0;
+  animation: sparkleBurst var(--dur) var(--delay) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 2px 4px rgba(255, 105, 180, 0.4));
+}
+@keyframes sparkleBurst {
+  0%   { transform: translate(0, 0) scale(0) rotate(0deg); opacity: 0; }
+  18%  { opacity: 1; transform: translate(calc(var(--dx) * 0.18), calc(var(--dy) * 0.18)) scale(1.25) rotate(90deg); }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(540deg); opacity: 0; }
+}
+
+/* Shockwave rings */
+.kitty-shockwave {
+  position: fixed;
+  left: 50%; top: 50%;
+  width: 24px; height: 24px;
+  margin-left: -12px; margin-top: -12px;
+  border-radius: 50%;
+  border: 4px solid #ff69b4;
+  opacity: 1;
+  pointer-events: none;
+  animation: kittyShockwave 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.kitty-shockwave--delay { animation-delay: 0.12s; border-color: #ffb8d0; }
+@keyframes kittyShockwave {
+  0%   { transform: scale(1);   opacity: 1; border-width: 4px; }
+  100% { transform: scale(140); opacity: 0; border-width: 0.2px; }
+}
+
+/* ============================================================
+   AMBIENT KITTY SPARKLES
+   ============================================================ */
+.kitty-field-particle {
+  position: absolute;
+  opacity: 0;
+  animation-name: kittyDrift;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  will-change: transform, opacity;
+}
+@keyframes kittyDrift {
+  0%   { transform: translate(0, 0) rotate(0deg);     opacity: 0; }
+  12%  { opacity: 0.65; }
+  50%  { transform: translate(22px, -48px) rotate(180deg); opacity: 0.85; }
+  88%  { opacity: 0.4; }
+  100% { transform: translate(-6px, -86px) rotate(360deg); opacity: 0; }
+}
+
+/* ============================================================
+   MASCOT: float + wiggle + twinkles + speech bubble
+   ============================================================ */
+.kitty-float  { animation: kittyFloatY 4s ease-in-out infinite; }
+.kitty-wiggle { animation: kittyWiggle 3s ease-in-out infinite; transform-origin: 50% 70%; }
+
+@keyframes kittyFloatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes kittyWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-4deg); }
+  75%      { transform: rotate(4deg); }
+}
+
+.kitty-bubble {
+  position: absolute;
+  left: 100%; top: 6px;
+  margin-left: 10px;
+  padding: 5px 11px;
+  background: #ffffff;
+  border: 2px solid #ff69b4;
+  border-radius: 16px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: #ff4d8d;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px -8px rgba(255, 77, 141, 0.6);
+}
+.kitty-bubble::before {
+  content: '';
+  position: absolute;
+  right: 100%; top: 50%;
+  margin-top: -7px;
+  margin-right: -2px;
+  border: 7px solid transparent;
+  border-right-color: #ff69b4;
+}
+
+.kitty-twinkle {
+  position: absolute;
+  color: #ffb8d0;
+  font-size: 12px;
+  animation: kittyTwinkle 2.4s ease-in-out infinite;
+  text-shadow: 0 0 6px rgba(255, 105, 180, 0.9);
+}
+@keyframes kittyTwinkle {
+  0%, 100% { opacity: 0;   transform: scale(0.6); }
+  50%      { opacity: 1;   transform: scale(1.2); }
 }

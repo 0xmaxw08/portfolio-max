@@ -13,7 +13,7 @@ import Footer from './components/Footer'
 
 function App() {
   useLenis()
-  const { active, toast } = useKittyMode()
+  const { active, toast, pulse } = useKittyMode()
 
   return (
     <div className="relative min-h-screen scanlines">
@@ -23,7 +23,7 @@ function App() {
       </div>
       <MouseTrail />
       <BackToTop />
-      <KittyMode active={active} toast={toast} />
+      <KittyMode active={active} toast={toast} pulse={pulse} />
       <Navbar />
       <main className="relative z-10">
         <Hero />
