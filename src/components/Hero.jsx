@@ -42,9 +42,9 @@ export default function Hero() {
     const start = performance.now()
 
     // Per-character speed in ms, plus a jitter factor to avoid robotic timing
-    const CHARS_PER_MS_FULL = 1 / 38   // ~38ms per char
-    const CHARS_PER_MS_BACK = 1 / 14   // ~14ms per char (backspace feels faster)
-    const CHARS_PER_MS_SHORT = 1 / 85  // ~85ms per char ("max" is deliberate)
+    const CHARS_PER_MS_FULL = 1 / 105  // ~105ms per char
+    const CHARS_PER_MS_BACK = 1 / 42   // ~42ms per char (backspace feels faster)
+    const CHARS_PER_MS_SHORT = 1 / 190 // ~190ms per char ("max" is deliberate)
 
     // Timeline plan (all in ms, relative to loop start)
     //  0      – 1100  : type full name
@@ -57,15 +57,16 @@ export default function Hero() {
     //  6950   – 7150  : beat, then loop
     const PHASE = {
       typeFull:    { start: 0,    duration: FULL_NAME.length / CHARS_PER_MS_FULL },
-      holdFull:    { start: null, duration: 2300 },
+      holdFull:    { start: null, duration: 3200 },
       backFull:    { start: null, duration: FULL_NAME.length / CHARS_PER_MS_BACK },
-      beat1:       { start: null, duration: 250 },
+      beat1:       { start: null, duration: 400 },
       typeShort:   { start: null, duration: SHORT_NAME.length / CHARS_PER_MS_SHORT },
-      holdShort:   { start: null, duration: 1700 },
+      holdShort:   { start: null, duration: 2800 },
       backShort:   { start: null, duration: SHORT_NAME.length / CHARS_PER_MS_BACK },
-      beat2:       { start: null, duration: 200 },
+      beat2:       { start: null, duration: 500 },
     }
-    // chain the starts
+
+     // chain the starts
     PHASE.holdFull.start  = PHASE.typeFull.start + PHASE.typeFull.duration
     PHASE.backFull.start  = PHASE.holdFull.start + PHASE.holdFull.duration
     PHASE.beat1.start     = PHASE.backFull.start + PHASE.backFull.duration
