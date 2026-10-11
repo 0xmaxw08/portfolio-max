@@ -1,12 +1,5 @@
 import { useEffect, useRef } from 'react'
 
-/**
- * Custom cursor built from a chain of lerped points.
- *  - point[0] follows the real cursor tightly
- *  - each subsequent point follows the one before it, producing a smooth snake
- *  - a lagging ring sits behind the head for a magnetic feel
- * The native cursor is hidden globally via CSS.
- */
 export default function MouseTrail() {
   const canvasRef = useRef(null)
 
@@ -41,11 +34,7 @@ export default function MouseTrail() {
     const ring = { x: mouse.x, y: mouse.y, ease: 0.14 }
     let pressed = false
 
-    const onMove = (e) => {
-      mouse.x = e.clientX
-      mouse.y = e.clientY
-      visible = true
-    }
+    const onMove = (e) => { mouse.x = e.clientX; mouse.y = e.clientY; visible = true }
     const onLeave = () => { visible = false }
     const onEnter = () => { visible = true }
     const onDown = () => { pressed = true }
@@ -59,22 +48,28 @@ export default function MouseTrail() {
 
     let raf
     const render = () => {
-      // head chases real cursor
       points[0].x += (mouse.x - points[0].x) * HEAD_EASE
       points[0].y += (mouse.y - points[0].y) * HEAD_EASE
-      // each following point chases the one ahead of it
       for (let i = 1; i < POINTS; i++) {
         points[i].x += (points[i - 1].x - points[i].x) * LINK_EASE
         points[i].y += (points[i - 1].y - points[i].y) * LINK_EASE
       }
-      // lagging ring
       ring.x += (mouse.x - ring.x) * ring.ease
       ring.y += (mouse.y - ring.y) * ring.ease
+
+      const kitty = document.body.classList.contains('kitty-mode')
+      const TAIL_R = kitty ? 255 : 235
+      const TAIL_G = kitty ? 105 : 235
+      const TAIL_B = kitty ? 180 : 235
+      const HEAD_COLOR = kitty ? 'rgba(255,120,170,0.98)' : 'rgba(245,255,245,0.98)'
+      const GLOW_COLOR = kitty ? 'rgba(255,77,141,0.5)' : 'rgba(74,222,128,0.45)'
+      const RING_COLOR = pressed
+        ? (kitty ? 'rgba(255,77,141,0.65)' : 'rgba(74,222,128,0.55)')
+        : (kitty ? 'rgba(255,105,180,0.45)' : 'rgba(255,255,255,0.22)')
 
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       if (visible) {
-        // snake trail — draw tail first so head sits on top
         for (let i = POINTS - 1; i >= 1; i--) {
           const p = points[i]
           const t = 1 - i / POINTS
@@ -82,35 +77,32 @@ export default function MouseTrail() {
           const a = 0.04 + t * 0.5
           ctx.beginPath()
           ctx.arc(p.x * dpr, p.y * dpr, r, 0, Math.PI * 2)
-          ctx.fillStyle = `rgba(235,235,235,${a})`
+          ctx.fillStyle = `rgba(${TAIL_R},${TAIL_G},${TAIL_B},${a})`
           ctx.fill()
         }
 
-        // lagging ring
         const ringR = (pressed ? 10 : 15) * dpr
         ctx.beginPath()
         ctx.arc(ring.x * dpr, ring.y * dpr, ringR, 0, Math.PI * 2)
-        ctx.strokeStyle = pressed ? 'rgba(74,222,128,0.55)' : 'rgba(255,255,255,0.22)'
+        ctx.strokeStyle = RING_COLOR
         ctx.lineWidth = 1 * dpr
         ctx.stroke()
 
-        // soft green glow at the head
         const head = points[0]
         const grd = ctx.createRadialGradient(
           head.x * dpr, head.y * dpr, 0,
           head.x * dpr, head.y * dpr, 18 * dpr
         )
-        grd.addColorStop(0, 'rgba(74,222,128,0.45)')
-        grd.addColorStop(1, 'rgba(74,222,128,0)')
+        grd.addColorStop(0, GLOW_COLOR)
+        grd.addColorStop(1, 'rgba(255,255,255,0)')
         ctx.beginPath()
         ctx.arc(head.x * dpr, head.y * dpr, 18 * dpr, 0, Math.PI * 2)
         ctx.fillStyle = grd
         ctx.fill()
 
-        // crisp head dot
         ctx.beginPath()
         ctx.arc(head.x * dpr, head.y * dpr, 3 * dpr, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(245,255,245,0.98)'
+        ctx.fillStyle = HEAD_COLOR
         ctx.fill()
       }
 

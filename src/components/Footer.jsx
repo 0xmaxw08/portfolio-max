@@ -43,6 +43,10 @@ export default function Footer() {
     },
   ]
 
+  const triggerKitty = () => {
+    window.dispatchEvent(new CustomEvent('kitty:toggle'))
+  }
+
   return (
     <footer id="contact" ref={sectionRef} className="relative py-48 px-6 border-t border-white/[0.06]">
       <div ref={innerRef} className="max-w-3xl mx-auto text-center">
@@ -72,7 +76,17 @@ export default function Footer() {
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-12 border-t border-white/[0.06] font-mono text-[11px] tracking-wider text-neutral-600">
           <span>© {new Date().getFullYear()} Manvendra Snehasish</span>
-          <span>built with react · tailwind · gsap · lenis</span>
+          <div className="flex items-center gap-3">
+            <span>built with react · tailwind · gsap · lenis</span>
+            <button
+              onClick={triggerKitty}
+              aria-label="Secret"
+              title="type 'kitty' anywhere"
+              className="opacity-20 hover:opacity-80 transition-opacity duration-500 text-sm leading-none"
+            >
+              🐱
+            </button>
+          </div>
         </div>
       </div>
     </footer>
