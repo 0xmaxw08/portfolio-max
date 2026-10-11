@@ -29,7 +29,7 @@ export default function Hero() {
     return () => ctx.revert()
   }, [])
 
-  // Typewriter: "Manvendra Snehasish" -> backspace -> "max"
+  // Smooth RAF-driven typewriter loop
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduced) {
@@ -37,43 +37,100 @@ export default function Hero() {
       return
     }
 
+    let raf
     let cancelled = false
-    const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+    const start = performance.now()
 
-    const run = async () => {
-      // Wait for the GSAP fade-in to be mostly done
-      await sleep(900)
+    // Per-character speed in ms, plus a jitter factor to avoid robotic timing
+    const CHARS_PER_MS_FULL = 1 / 38   // ~38ms per char
+    const CHARS_PER_MS_BACK = 1 / 14   // ~14ms per char (backspace feels faster)
+    const CHARS_PER_MS_SHORT = 1 / 85  // ~85ms per char ("max" is deliberate)
 
-      // Type the full name
-      for (let i = 1; i <= FULL_NAME.length; i++) {
-        if (cancelled) return
-        setDisplayed(FULL_NAME.slice(0, i))
-        await sleep(55)
+    // Timeline plan (all in ms, relative to loop start)
+    //  0      – 1100  : type full name
+    //  1100   – 3400  : hold
+    //  3400   – 4400  : backspace full name
+    //  4400   – 4650  : beat
+    //  4650   – 4950  : type "max"
+    //  4950   – 6650  : hold
+    //  6650   – 6950  : backspace "max"
+    //  6950   – 7150  : beat, then loop
+    const PHASE = {
+      typeFull:    { start: 0,    duration: FULL_NAME.length / CHARS_PER_MS_FULL },
+      holdFull:    { start: null, duration: 2300 },
+      backFull:    { start: null, duration: FULL_NAME.length / CHARS_PER_MS_BACK },
+      beat1:       { start: null, duration: 250 },
+      typeShort:   { start: null, duration: SHORT_NAME.length / CHARS_PER_MS_SHORT },
+      holdShort:   { start: null, duration: 1700 },
+      backShort:   { start: null, duration: SHORT_NAME.length / CHARS_PER_MS_BACK },
+      beat2:       { start: null, duration: 200 },
+    }
+    // chain the starts
+    PHASE.holdFull.start  = PHASE.typeFull.start + PHASE.typeFull.duration
+    PHASE.backFull.start  = PHASE.holdFull.start + PHASE.holdFull.duration
+    PHASE.beat1.start     = PHASE.backFull.start + PHASE.backFull.duration
+    PHASE.typeShort.start = PHASE.beat1.start + PHASE.beat1.duration
+    PHASE.holdShort.start = PHASE.typeShort.start + PHASE.typeShort.duration
+    PHASE.backShort.start = PHASE.holdShort.start + PHASE.holdShort.duration
+    PHASE.beat2.start     = PHASE.backShort.start + PHASE.backShort.duration
+    const LOOP_MS = PHASE.beat2.start + PHASE.beat2.duration
+
+    // ease functions
+    const easeInOut = (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
+
+    const tick = (now) => {
+      if (cancelled) return
+      const elapsed = (now - start) % LOOP_MS
+
+      let next = ''
+
+      if (elapsed < PHASE.holdFull.start) {
+        // typing full name
+        const t = (elapsed - PHASE.typeFull.start) / PHASE.typeFull.duration
+        const eased = easeInOut(Math.min(Math.max(t, 0), 1))
+        const n = Math.round(eased * FULL_NAME.length)
+        next = FULL_NAME.slice(0, n)
+      } else if (elapsed < PHASE.backFull.start) {
+        // holding full name
+        next = FULL_NAME
+      } else if (elapsed < PHASE.beat1.start) {
+        // backspacing full name
+        const t = (elapsed - PHASE.backFull.start) / PHASE.backFull.duration
+        const eased = easeInOut(Math.min(Math.max(t, 0), 1))
+        const n = FULL_NAME.length - Math.round(eased * FULL_NAME.length)
+        next = FULL_NAME.slice(0, n)
+      } else if (elapsed < PHASE.typeShort.start) {
+        // beat
+        next = ''
+      } else if (elapsed < PHASE.holdShort.start) {
+        // typing "max"
+        const t = (elapsed - PHASE.typeShort.start) / PHASE.typeShort.duration
+        const eased = easeInOut(Math.min(Math.max(t, 0), 1))
+        const n = Math.round(eased * SHORT_NAME.length)
+        next = SHORT_NAME.slice(0, n)
+      } else if (elapsed < PHASE.backShort.start) {
+        // holding "max"
+        next = SHORT_NAME
+      } else if (elapsed < PHASE.beat2.start) {
+        // backspacing "max"
+        const t = (elapsed - PHASE.backShort.start) / PHASE.backShort.duration
+        const eased = easeInOut(Math.min(Math.max(t, 0), 1))
+        const n = SHORT_NAME.length - Math.round(eased * SHORT_NAME.length)
+        next = SHORT_NAME.slice(0, n)
+      } else {
+        // final beat before loop
+        next = ''
       }
 
-      // Hold so it's readable
-      await sleep(2000)
-
-      // Backspace
-      for (let i = FULL_NAME.length - 1; i >= 0; i--) {
-        if (cancelled) return
-        setDisplayed(FULL_NAME.slice(0, i))
-        await sleep(26)
-      }
-
-      // Small beat before typing the handle
-      await sleep(350)
-
-      // Type "max"
-      for (let i = 1; i <= SHORT_NAME.length; i++) {
-        if (cancelled) return
-        setDisplayed(SHORT_NAME.slice(0, i))
-        await sleep(95)
-      }
+      setDisplayed((prev) => (prev === next ? prev : next))
+      raf = requestAnimationFrame(tick)
     }
 
-    run()
-    return () => { cancelled = true }
+    raf = requestAnimationFrame(tick)
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(raf)
+    }
   }, [])
 
   return (
@@ -96,10 +153,7 @@ export default function Hero() {
             aria-label={FULL_NAME}
             className="relative text-5xl md:text-7xl lg:text-[5.5rem] font-semibold leading-[0.95] mb-6 text-neutral-100"
           >
-            {/* Invisible spacer reserves the layout so the page doesn't jump while typing */}
             <span aria-hidden="true" className="invisible">{FULL_NAME}</span>
-
-            {/* Animated text overlaid on the spacer */}
             <span aria-hidden="true" className="absolute inset-0 whitespace-pre-wrap">
               {displayed}
               <span className="inline-block w-[3px] h-[0.85em] bg-term align-[-0.05em] ml-2 animate-blink" />
