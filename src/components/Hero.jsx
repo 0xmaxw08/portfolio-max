@@ -1,5 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
+
+const FULL_NAME = 'Manvendra Snehasish'
+const SHORT_NAME = 'max'
 
 export default function Hero() {
   const sectionRef = useRef(null)
@@ -10,17 +13,67 @@ export default function Hero() {
   const ctaRef = useRef(null)
   const graphicRef = useRef(null)
 
+  const [displayed, setDisplayed] = useState('')
+
+  // GSAP intro
   useEffect(() => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: 'power4.out' } })
       tl.from(statusRef.current, { y: 20, opacity: 0, duration: 1 })
-        .from(nameRef.current, { y: 80, opacity: 0, duration: 1.4 }, '-=0.6')
+        .from(nameRef.current, { y: 40, opacity: 0, duration: 1 }, '-=0.6')
         .from(taglineRef.current, { y: 30, opacity: 0, duration: 1.2 }, '-=0.9')
         .from(subtextRef.current, { y: 20, opacity: 0, duration: 1.2 }, '-=0.9')
         .from(ctaRef.current, { y: 20, opacity: 0, duration: 1 }, '-=0.8')
         .from(graphicRef.current, { scale: 0.92, opacity: 0, duration: 1.6 }, '-=1.4')
     }, sectionRef)
     return () => ctx.revert()
+  }, [])
+
+  // Typewriter: "Manvendra Snehasish" -> backspace -> "max"
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduced) {
+      setDisplayed(SHORT_NAME)
+      return
+    }
+
+    let cancelled = false
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
+    const run = async () => {
+      // Wait for the GSAP fade-in to be mostly done
+      await sleep(900)
+
+      // Type the full name
+      for (let i = 1; i <= FULL_NAME.length; i++) {
+        if (cancelled) return
+        setDisplayed(FULL_NAME.slice(0, i))
+        await sleep(55)
+      }
+
+      // Hold so it's readable
+      await sleep(2000)
+
+      // Backspace
+      for (let i = FULL_NAME.length - 1; i >= 0; i--) {
+        if (cancelled) return
+        setDisplayed(FULL_NAME.slice(0, i))
+        await sleep(26)
+      }
+
+      // Small beat before typing the handle
+      await sleep(350)
+
+      // Type "max"
+      for (let i = 1; i <= SHORT_NAME.length; i++) {
+        if (cancelled) return
+        setDisplayed(SHORT_NAME.slice(0, i))
+        await sleep(95)
+      }
+    }
+
+    run()
+    return () => { cancelled = true }
   }, [])
 
   return (
@@ -38,8 +91,19 @@ export default function Hero() {
             </span>
           </div>
 
-          <h1 ref={nameRef} className="text-5xl md:text-7xl lg:text-[5.5rem] font-semibold leading-[0.95] mb-6 text-neutral-100">
-            Manvendra<br />Snehasish<span className="inline-block w-[3px] h-[0.85em] bg-term align-[-0.05em] ml-2 animate-blink" />
+          <h1
+            ref={nameRef}
+            aria-label={FULL_NAME}
+            className="relative text-5xl md:text-7xl lg:text-[5.5rem] font-semibold leading-[0.95] mb-6 text-neutral-100"
+          >
+            {/* Invisible spacer reserves the layout so the page doesn't jump while typing */}
+            <span aria-hidden="true" className="invisible">{FULL_NAME}</span>
+
+            {/* Animated text overlaid on the spacer */}
+            <span aria-hidden="true" className="absolute inset-0 whitespace-pre-wrap">
+              {displayed}
+              <span className="inline-block w-[3px] h-[0.85em] bg-term align-[-0.05em] ml-2 animate-blink" />
+            </span>
           </h1>
 
           <p ref={taglineRef} className="font-mono text-sm md:text-base text-neutral-500 mb-8 tracking-wide">
